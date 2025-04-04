@@ -1230,11 +1230,22 @@ class IndyVdrLedger(BaseLedger):
         """Publish a revocation registry entry to the ledger."""
         async with self.profile.session() as session:
             wallet = session.inject(BaseWallet)
-            if issuer_did:
-                did_info = await wallet.get_local_did(issuer_did)
+            did_info = None
+
+            try:
+                if issuer_did:
+                    did_info = await wallet.get_local_did(issuer_did)
+            except WalletNotFoundError:
+                LOGGER.exception("No issuer DID found for revocation registry entry")
+
+            if not did_info:
+                try:
+                    did_info = await wallet.get_public_did()
+                except WalletNotFoundError:
+                    LOGGER.exception("No public DID found for revocation registry entry")
             else:
-                did_info = await wallet.get_public_did()
-            del wallet
+                del wallet
+
         if not did_info:
             raise LedgerTransactionError(
                 "No issuer DID found for revocation registry entry"
