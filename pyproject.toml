@@ -69,12 +69,12 @@ didcomm-messaging = { version = "^0.1.1a0", optional = true }
 canonicaljson = "^2.0.0"
 
 # Plugins
-# basicmessage_storage = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "basicmessage_storage" }
-# connections = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "connections" }
-# connection_update = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "connection_update" }
-# multitenant_provider = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "multitenant_provider" }
-# rpc = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "rpc" }
-# traction_innkeeper = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "traction_innkeeper" }
+basicmessage_storage = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "basicmessage_storage" }
+connections = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "connections" }
+connection_update = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "connection_update" }
+multitenant_provider = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "multitenant_provider" }
+rpc = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "rpc" }
+traction_innkeeper = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy", subdirectory = "traction_innkeeper" }
 
 [tool.poetry.group.dev.dependencies]
 # Sync with version in .pre-commit-config.yaml and .github/workflows/format.yml
