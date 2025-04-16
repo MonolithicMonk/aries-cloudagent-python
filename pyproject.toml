@@ -68,6 +68,14 @@ ursa-bbs-signatures = { version = "~1.0.1", optional = true }
 didcomm-messaging = { version = "^0.1.1a0", optional = true }
 canonicaljson = "^2.0.0"
 
+# Plugins
+basicmessage_storage = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy" }
+connection_update = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy" }
+connections = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy" }
+multitenant_provider = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy" }
+rpc = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy" }
+traction_innkeeper = { git = "https://github.com/MonolithicMonk/acapy-plugins.git", branch = "dacapy" }
+
 [tool.poetry.group.dev.dependencies]
 # Sync with version in .pre-commit-config.yaml and .github/workflows/format.yml
 ruff = "~0.11.4"
@@ -85,6 +93,8 @@ pytest-cov = "^6.0.0"
 pytest-ruff = "^0.4.1"
 pytest-xdist = "^3.6.1"
 debugpy = "^1.8.11"
+watchdog = "^6.0.0"
+watchfiles = "^1.0.4"
 
 [tool.poetry.extras]
 bbs = ["ursa-bbs-signatures"]
