@@ -1906,11 +1906,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deploying/AnonCredsControllerMigration.md" class="md-nav__link">
+      <a href="../../deploying/AnonCredsControllerMigration/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Controller Migration to use AnonCreds Rust
+    Controller Migration to use the askar-anoncreds Wallet Type
     
   </span>
   
@@ -2310,6 +2310,28 @@
   
   
     <li class="md-nav__item">
+      <a href="../../GOVERNANCE/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Governance
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../CODE_OF_CONDUCT/" class="md-nav__link">
         
   
@@ -2494,7 +2516,7 @@
 
 <h1 id="acme-controller-workshop">Acme Controller Workshop<a class="headerlink" href="#acme-controller-workshop" title="Permanent link">&para;</a></h1>
 <p>In this workshop we will add some functionality to a third participant in the Alice/Faber drama - namely, Acme Inc.  After completing her education at Faber College, Alice is going to apply for a job at Acme Inc.  To do this she must provide proof of education (once she has completed the interview and other non-Indy tasks), and then Acme will issue her an employment credential.</p>
-<p>Note that an updated Acme controller is available here: <a href="https://github.com/ianco/aries-cloudagent-python/tree/acme_workshop/demo">https://github.com/ianco/aries-cloudagent-python/tree/acme_workshop/demo</a> if you just want to skip ahead ...  There is also an alternate solution with some additional functionality available here:  <a href="https://github.com/ianco/aries-cloudagent-python/tree/agent_workshop/demo">https://github.com/ianco/aries-cloudagent-python/tree/agent_workshop/demo</a></p>
+<p>Note that an updated Acme controller is available here: <a href="https://github.com/openwallet-foundation/acapy/blob/acme_workshop/demo/runners/acme.py">https://github.com/openwallet-foundation/acapy/blob/acme_workshop/demo/runners/acme.py</a> if you just want to skip ahead ...</p>
 <h2 id="preview-of-the-acme-controller">Preview of the Acme Controller<a class="headerlink" href="#preview-of-the-acme-controller" title="Permanent link">&para;</a></h2>
 <p>There is already a skeleton of the Acme controller in place, you can run it as follows.  (Note that beyond establishing a connection it doesn't actually do anything yet.)</p>
 <p>To run the Acme controller template, first run Alice and Faber so that Alice can prove her education experience:</p>
@@ -2503,15 +2525,15 @@
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>acapy/demo
 </code></pre></div>
 <p>In one shell run Faber:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">LEDGER_URL</span><span class="o">=</span>http://test.bcovrin.vonx.io<span class="w"> </span>./run_demo<span class="w"> </span>faber
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">LEDGER_URL</span><span class="o">=</span>https://test.bcovrin.vonx.io<span class="w"> </span>./run_demo<span class="w"> </span>faber
 </code></pre></div>
 <p>... and in the second shell run Alice:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nv">LEDGER_URL</span><span class="o">=</span>http://test.bcovrin.vonx.io<span class="w"> </span>./run_demo<span class="w"> </span>alice
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nv">LEDGER_URL</span><span class="o">=</span>https://test.bcovrin.vonx.io<span class="w"> </span>./run_demo<span class="w"> </span>alice
 </code></pre></div>
 <p>When Faber has produced an invitation, copy it over to Alice.</p>
 <p>Then, in the Faber shell, select option <code>1</code> to issue a credential to Alice.  (You can select option <code>2</code> if you like, to confirm via proof.)</p>
 <p>Then, in the Faber shell, enter <code>X</code> to exit the controller, and then run the Acme controller:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nv">LEDGER_URL</span><span class="o">=</span>http://test.bcovrin.vonx.io<span class="w"> </span>./run_demo<span class="w"> </span>acme
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nv">LEDGER_URL</span><span class="o">=</span>https://test.bcovrin.vonx.io<span class="w"> </span>./run_demo<span class="w"> </span>acme
 </code></pre></div>
 <p>In the Alice shell, select option <code>4</code> (to enter a new invitation) and then copy over Acme's invitation once it's available.</p>
 <p>Then, in the Acme shell, you can select option <code>2</code> and then option <code>1</code>, which don't do anything ... yet!!!</p>

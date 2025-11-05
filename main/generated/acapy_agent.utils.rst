@@ -113,6 +113,14 @@ acapy\_agent.utils.repeat module
    :undoc-members:
    :show-inheritance:
 
+acapy\_agent.utils.server module
+--------------------------------
+
+.. automodule:: acapy_agent.utils.server
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 acapy\_agent.utils.stats module
 -------------------------------
 
@@ -141,6 +149,14 @@ acapy\_agent.utils.tracing module
 ---------------------------------
 
 .. automodule:: acapy_agent.utils.tracing
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+acapy\_agent.utils.wait\_for\_active\_registry module
+-----------------------------------------------------
+
+.. automodule:: acapy_agent.utils.wait_for_active_registry
    :members:
    :undoc-members:
    :show-inheritance:
