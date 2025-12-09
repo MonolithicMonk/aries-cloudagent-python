@@ -139,3 +139,14 @@ The APIs should return the following HTTP status:
 ...and should not return:
 
 * HTTP 500 with a stack trace due to an untrapped error (we should handle error conditions with a 400 or 404 response and catch errors, providing a meaningful error message)
+
+## ACA-Py API Modernization
+
+ACA-Py exposes an HTTP Administration API to allow controller applications to manage the agent.
+
+> **🚧 Modernization In Progress (V2 API)**
+>
+> A new version of the Admin API based on **FastAPI** is currently in active development. It runs on a separate port and offers strict validation and OpenAPI 3.1 support.
+> See [Admin API V2 Modernization](../design/AdminAPI_V2_Modernization.md) for details.
+
+The API is self-documented using Swagger UI.
