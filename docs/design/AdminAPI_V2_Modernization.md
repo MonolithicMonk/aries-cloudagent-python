@@ -37,6 +37,25 @@ V2 endpoints reject extra fields by default and enforce strict type checking on 
 ### 3. Authentication
 V2 uses the standard `Authorization: Bearer <token>` or `X-API-KEY` headers via FastAPI's Dependency Injection system. The logic mirrors V1 but is implemented via `acapy_agent.admin.dependencies`.
 
+## Patterns & Best Practices
+
+### 1. Sending DIDComm Messages
+FastAPI routes cannot directly access the internal `OutboundMessageRouter` in the same way `BaseHandler` classes do.
+**Pattern**: Use a local or shared `FastAPIResponder` adapter that implements `BaseResponder`.
+```python
+class FastAPIResponder(BaseResponder):
+    def __init__(self, profile, send_fn, **kwargs): ...
+    async def send_outbound(self, message, **kwargs):
+        return await self._send_fn(self._profile, message)
+```
+*Note: This class bridges the new API world with the legacy transport layer.*
+
+### 2. Testing Strategy
+*   **Tool**: `starlette.testclient.TestClient`.
+*   **Scope**: Tests should be synchronous wrappers around the async API.
+*   **Mocks**: Always mock `ConnRecord` (DB) and `outbound_message_router` (Transport).
+*   **Verification**: Assert that the JSON response uses `camelCase` keys (e.g., `assert "threadId" in data`).
+
 ## Developer Guide: Porting a Protocol
 
 To port a protocol (e.g., `basicmessage`) to V2:
