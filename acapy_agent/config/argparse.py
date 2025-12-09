@@ -23,6 +23,7 @@ from .util import BoundedInt, ByteSize
 
 LOGGER = logging.getLogger(__name__)
 
+# ... existing constants and helper functions (fetch_remote_config, etc.) ...
 CAT_PROVISION = "general"
 CAT_START = "start"
 CAT_UPGRADE = "upgrade"
@@ -33,7 +34,7 @@ ENDORSER_NONE = "none"
 
 
 def fetch_remote_config(url: str, timeout: int = 30) -> str:
-    """Fetch a remote configuration file from a URL.
+    """Fetch a remote configuration from a URL.
 
     Args:
         url: The URL to fetch the configuration from
@@ -304,6 +305,25 @@ class AdminGroup(ArgumentGroup):
             env_var="ACAPY_ADMIN_CLIENT_MAX_REQUEST_SIZE",
             help="Maximum client request size to admin server, in megabytes: default 1",
         )
+        parser.add_argument(
+            "--admin-v2",
+            action="store_true",
+            env_var="ACAPY_ADMIN_V2",
+            help=(
+                "Enable the experimental FastAPI-based Admin API (v2). "
+                "It will run alongside the legacy API."
+            ),
+        )
+        parser.add_argument(
+            "--admin-v2-port",
+            type=int,
+            metavar="<port>",
+            env_var="ACAPY_ADMIN_V2_PORT",
+            help=(
+                "Specify the port for the FastAPI Admin API. "
+                "Defaults to the legacy admin port + 1 if not specified."
+            ),
+        )
 
     def get_settings(self, args: Namespace):
         """Extract admin settings."""
@@ -339,6 +359,20 @@ class AdminGroup(ArgumentGroup):
             settings["admin.admin_client_max_request_size"] = (
                 args.admin_client_max_request_size or 1
             )
+
+            if args.admin_v2:
+                settings["admin.v2.enabled"] = True
+                if args.admin_v2_port:
+                    settings["admin.v2.port"] = args.admin_v2_port
+                else:
+                    # Default to legacy port + 1 if not provided
+                    try:
+                        settings["admin.v2.port"] = int(args.admin[1]) + 1
+                    except ValueError:
+                        raise ArgsParseError(
+                            "Invalid port format in --admin argument. "
+                            "Could not calculate default v2 port."
+                        )
         return settings
 
 

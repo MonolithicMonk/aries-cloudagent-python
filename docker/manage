@@ -8,6 +8,42 @@ set -e
 SCRIPT_HOME="$(cd "$(dirname "$0")" && pwd)"
 
 # =================================================================================================================
+# Helper Functions
+# -----------------------------------------------------------------------------------------------------------------
+
+function echoError (){
+  _msg=${1}
+  _red='\e[31m'
+  _nc='\e[0m' # No Color
+  echo -e "${_red}${_msg}${_nc}"
+}
+
+function echoWarning (){
+  _msg=${1}
+  _yellow='\e[33m'
+  _nc='\e[0m' # No Color
+  echo -e "${_yellow}${_msg}${_nc}"
+}
+
+function echoSuccess (){
+  _msg=${1}
+  _green='\e[32m'
+  _nc='\e[0m' # No Color
+  echo -e "${_green}${_msg}${_nc}"
+}
+
+function echoInfo (){
+  _msg=${1}
+  _gray='\e[36m'
+  _nc='\e[0m' # No Color
+  echo -e "${_gray}${_msg}${_nc}"
+}
+
+function toLower() {
+  echo $(echo ${@} | tr '[:upper:]' '[:lower:]')
+}
+
+# =================================================================================================================
 # Usage:
 # -----------------------------------------------------------------------------------------------------------------
 usage() {
@@ -17,28 +53,50 @@ usage() {
 
       Commands:
 
-      demo  - Build the demo docker image and run an integration test or demo.
+      start     - Run an agent (calls scripts/run_docker start).
+                  $0 start --label my-agent
 
-      provision - Provision an agent
+      up        - Alias for start.
 
-      start - Run an agent.
+      provision - Provision an agent (calls scripts/run_docker provision).
+                  $0 provision --wallet-type askar
 
-      test  - Run unit tests.
+      upgrade   - Run the upgrade process (calls scripts/run_docker upgrade).
 
-      test-indy  - Run unit tests, including Indy-specific tests.
+      demo      - Build the demo docker image and run an integration test or demo.
+                  $0 demo --events
+
+      test      - Run unit tests (calls scripts/run_tests).
+                  $0 test
+
+      test-all  - Run all unit tests including extras.
+
+      format    - Run code formatting (ruff) via poetry (requires local poetry environment).
 
 EOF
   exit 1
 }
 
-toLower() {
-  echo $(echo ${@} | tr '[:upper:]' '[:lower:]')
-}
+# =================================================================================================================
+# Environment & Argument Parsing
+# -----------------------------------------------------------------------------------------------------------------
 
-exportEnvironment() {
+configureEnvironment() {
+  # Load .env file if it exists
+  if [ -f .env ]; then
+    echoInfo "Loading environment from .env..."
+    while read line; do
+      if [[ ! "$line" =~ ^\# ]] && [[ "$line" =~ .*= ]]; then
+        export "${line//[$'\r\n']}"
+      fi
+    done <.env
+  fi
+
+  # Process command line arguments for key=value exports
   for arg in "$@"; do
     case "$arg" in
       *=*)
+        echoInfo "Exporting env var: ${arg}"
         export "${arg}"
         ;;
     esac
@@ -51,7 +109,7 @@ getStartupParams() {
   for arg in "$@"; do
     case "$arg" in
     *=*)
-      # Skip it
+      # Skip env var definitions (handled in configureEnvironment)
       ;;
     *)
       PARAMS+=" $arg"
@@ -63,6 +121,8 @@ getStartupParams() {
 }
 
 # =================================================================================================================
+# Main Execution
+# -----------------------------------------------------------------------------------------------------------------
 
 pushd ${SCRIPT_HOME} >/dev/null
 COMMAND=$(toLower ${1})
@@ -70,28 +130,48 @@ shift || COMMAND=usage
 
 case "${COMMAND}" in
 start|up)
-  exportEnvironment "$@"
+  echoInfo "Starting ACA-Py container..."
+  configureEnvironment "$@"
   ../scripts/run_docker start $(getStartupParams "$@")
   ;;
 provision)
-  exportEnvironment "$@"
+  echoInfo "Provisioning ACA-Py wallet..."
+  configureEnvironment "$@"
   ../scripts/run_docker provision $(getStartupParams "$@")
   ;;
 upgrade)
-  exportEnvironment "$@"
+  echoInfo "Running ACA-Py upgrade..."
+  configureEnvironment "$@"
   ../scripts/run_docker upgrade $(getStartupParams "$@")
   ;;
 demo)
-  exportEnvironment "$@"
+  echoInfo "Starting Demo..."
+  configureEnvironment "$@"
   ../demo/run_demo $(getStartupParams "$@")
   ;;
 test)
-  exportEnvironment "$@"
+  echoInfo "Running Unit Tests..."
+  configureEnvironment "$@"
   ../scripts/run_tests $(getStartupParams "$@")
   ;;
 test-all)
-  exportEnvironment "$@"
+  echoInfo "Running All Unit Tests..."
+  configureEnvironment "$@"
   ../scripts/run_tests --all-extras $(getStartupParams "$@")
+  ;;
+format)
+  echoInfo "Formatting code with Ruff..."
+  if command -v poetry &> /dev/null; then
+    # We assume we are in the docker dir, so we go up to root
+    pushd .. >/dev/null
+    poetry run ruff format .
+    poetry run ruff check --fix .
+    popd >/dev/null
+    echoSuccess "Formatting complete."
+  else
+    echoError "Poetry not found. Please install poetry to run local formatting."
+    exit 1
+  fi
   ;;
 *)
   usage

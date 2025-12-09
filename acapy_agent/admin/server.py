@@ -9,6 +9,7 @@ from typing import Callable, Coroutine, Optional
 
 import aiohttp_cors
 import jwt
+import uvicorn
 from aiohttp import web
 from aiohttp_apispec import setup_aiohttp_apispec, validation_middleware
 from uuid_utils import uuid4
@@ -39,6 +40,7 @@ from ..wallet import singletons
 from ..wallet.anoncreds_upgrade import check_upgrade_completion_loop
 from .base_server import BaseAdminServer
 from .error import AdminSetupError
+from .fastapi_factory import create_admin_app
 from .request_context import AdminRequestContext
 from .routes import (
     config_handler,
@@ -302,6 +304,12 @@ class AdminServer(BaseAdminServer):
         self.site = None
         self.multitenant_manager = context.inject_or(BaseMultitenantManager)
 
+        # V2 Admin Server state
+        self.v2_enabled = context.settings.get("admin.v2.enabled", False)
+        self.v2_port = context.settings.get("admin.v2.port")
+        self.v2_server = None  # Uvicorn server instance
+        self.v2_task = None  # asyncio task for uvicorn
+
     async def make_application(self) -> web.Application:
         """Get the aiohttp application instance."""
         middlewares = [ready_middleware, debug_middleware]
@@ -517,6 +525,27 @@ class AdminServer(BaseAdminServer):
                 + f"'{self.host}' and port '{self.port}'\n"
             )
 
+        # Start V2 Admin Server if enabled
+        if self.v2_enabled:
+            LOGGER.info("Starting Admin V2 (FastAPI) on %s:%s", self.host, self.v2_port)
+            try:
+                fastapi_app = create_admin_app(self.context, self.root_profile)
+                config = uvicorn.Config(
+                    app=fastapi_app,
+                    host=self.host,
+                    port=self.v2_port,
+                    log_level="info",
+                    # Important: use the existing loop
+                    loop="none",
+                )
+                self.v2_server = uvicorn.Server(config)
+                # Run uvicorn in a background task
+                self.v2_task = asyncio.create_task(self.v2_server.serve())
+            except Exception as e:
+                LOGGER.exception("Failed to start Admin V2 server: %s", e)
+                # For now, we don't hard crash the V1 server if V2 fails
+                # allowing for partial degradation during the transition period.
+
     async def stop(self) -> None:
         """Stop the webserver."""
         # Stopped before admin server is created
@@ -529,6 +558,13 @@ class AdminServer(BaseAdminServer):
         if self.site:
             await self.site.stop()
             self.site = None
+
+        # Stop V2 Admin Server
+        if self.v2_server:
+            self.v2_server.should_exit = True
+            if self.v2_task:
+                await self.v2_task
+                self.v2_task = None
 
     async def on_startup(self, app: web.Application):
         """Perform webserver startup actions."""
