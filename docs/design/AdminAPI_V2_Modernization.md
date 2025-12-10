@@ -65,6 +65,26 @@ To port a protocol (e.g., `basicmessage`) to V2:
 3.  **Create Routes**: Create `routes.py`. Use `APIRouter`. Inject `Profile` via `Depends(get_profile)`.
 4.  **Register Router**: Import and include the router in `acapy_agent/admin/fastapi_factory.py`.
 
+### Standard Types & Validation
+Do not define regex patterns manually in your models. Use the centralized types in `acapy_agent.admin.models.types`.
+
+| Type | Usage |
+| :--- | :--- |
+| `UUID4Str` | Any UUID field (connection_id, thread_id) |
+| `DIDStr` | Generic DIDs (did:peer, did:key, did:web) |
+| `IndyDidStr` | Legacy unqualified Indy DIDs (Base58, ~22 chars) |
+| `VerkeyStr` | Verification Keys (Base58) |
+
+**Example:**
+```python
+from acapy_agent.admin.models.base import BaseAdminModel
+from acapy_agent.admin.models.types import UUID4Str, DIDStr
+
+class ConnectionResponse(BaseAdminModel):
+    connection_id: UUID4Str
+    their_did: DIDStr
+```
+
 ## Roadmap
 1.  **Foundation**: Infrastructure, Auth, and Pilot (TrustPing) [Complete]
 2.  **Core Protocols**: Connections, Issue Credential, Present Proof [In Progress]

@@ -1,9 +1,16 @@
 """Base Pydantic models for Admin API v2."""
 
-from typing import Annotated, Optional
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
+
+# Import centralized types
+# Re-exporting for backward compatibility within the admin module
+from .types import DIDStr  # noqa: F401
+from .types import UUID4Str as ConnectionIdStr  # noqa: F401
+from .types import UUID4Str as ThreadIdStr  # noqa: F401
+from .types import VerkeyStr  # noqa: F401
 
 
 class BaseAdminModel(BaseModel):
@@ -20,47 +27,6 @@ class BaseAdminModel(BaseModel):
         # We start with strict=False (default) but explicit types.
         from_attributes=True,  # Allows creating from ORM/Attribute objects
     )
-
-
-# --- Common Field Types ---
-
-# Standard DID Validator (Generic)
-# Matches: did:method:specific-id
-DIDStr = Annotated[
-    str,
-    Field(
-        pattern=r"^did:[a-z0-9]+:[a-zA-Z0-9._%-]*:?[a-zA-Z0-9._%-]+$",
-        examples=["did:sov:WRfXPg8dantKVubE3HX8pw"],
-    ),
-]
-
-# Verkey / Multikey
-# Base58 check (roughly)
-VerkeyStr = Annotated[
-    str,
-    Field(
-        min_length=40,
-        max_length=50,
-        examples=["H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"],
-    ),
-]
-
-# UUID4
-ConnectionIdStr = Annotated[
-    str,
-    Field(
-        min_length=36,
-        max_length=36,
-        pattern=r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
-        examples=["3fa85f64-5717-4562-b3fc-2c963f66afa6"],
-        description="Connection identifier",
-    ),
-]
-
-ThreadIdStr = Annotated[
-    str,
-    Field(examples=["3fa85f64-5717-4562-b3fc-2c963f66afa6"], description="Thread ID"),
-]
 
 
 class BaseRecordModel(BaseAdminModel):

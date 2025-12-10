@@ -69,10 +69,10 @@ async def send_ping(
     profile: Profile = Depends(get_profile),
 ):
     """Send a trust ping to a connection.
-    
+
     This endpoint sends a Trust Ping message to the specified connection to check
     if it is active and responsive.
-    
+
     **Note:** This relies on the Trust Ping Protocol 1.0.
     """
     body = body or PingRequest()

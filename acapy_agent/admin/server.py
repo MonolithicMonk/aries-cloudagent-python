@@ -530,9 +530,7 @@ class AdminServer(BaseAdminServer):
             LOGGER.info("Starting Admin V2 (FastAPI) on %s:%s", self.host, self.v2_port)
             try:
                 fastapi_app = create_admin_app(
-                    self.context, 
-                    self.root_profile, 
-                    self.outbound_message_router
+                    self.context, self.root_profile, self.outbound_message_router
                 )
                 config = uvicorn.Config(
                     app=fastapi_app,
