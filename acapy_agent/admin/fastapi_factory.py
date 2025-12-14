@@ -3,8 +3,9 @@
 import logging
 from typing import Callable, Coroutine
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 
 from ..config.injection_context import InjectionContext
@@ -12,6 +13,7 @@ from ..core.profile import Profile
 from .dependencies import verify_admin_key
 
 # Import Protocol Routers
+from ..connections.v2.routes import router as connections_router
 from ..protocols.trustping.v1_0.v2.routes import router as trustping_router
 
 LOGGER = logging.getLogger(__name__)
@@ -50,6 +52,23 @@ def create_admin_app(
         ],
     )
 
+    # --- DEBUGGING HANDLER START ---
+    # This captures any 500 error and returns the actual string representation of the error
+    # to the client. This is CRITICAL for debugging Pydantic validation errors in tests.
+    @app.exception_handler(Exception)
+    async def debug_exception_handler(request: Request, exc: Exception):
+        LOGGER.exception("Unexpected error in FastAPI Admin API")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "message": "Internal Server Error",
+                "detail": str(exc),
+                "type": type(exc).__name__,
+            },
+        )
+
+    # --- DEBUGGING HANDLER END ---
+
     # Store context and profile in app state for dependencies to access
     app.state.context = context
     app.state.root_profile = root_profile
@@ -82,6 +101,7 @@ def create_admin_app(
 
     # --- Register Protocol Routers ---
     app.include_router(trustping_router)
+    app.include_router(connections_router)
 
     LOGGER.info("FastAPI Admin V2 Application initialized")
     return app

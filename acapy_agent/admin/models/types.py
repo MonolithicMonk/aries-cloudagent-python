@@ -5,38 +5,42 @@ acapy_agent/messaging/valid.py.
 """
 
 from typing import Annotated
-
 from pydantic import Field, StringConstraints
 
-# --- Regex Patterns ---
-# Matches UUIDv4
-UUID4_PATTERN = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+# Import the battle-tested validators from V1
+from acapy_agent.messaging.valid import (
+    ENDPOINT_VALIDATE,
+    GENERIC_DID_VALIDATE,
+    INDY_DID_VALIDATE,
+    RAW_ED25519_2018_PUBLIC_KEY_VALIDATE,
+    UUID4_VALIDATE,
+)
 
-# Matches generic DIDs (did:method:identifier)
-# Based on W3C DID Core specification
-DID_PATTERN = r"^did:[a-z0-9]+:[a-zA-Z0-9._%-]*:?[a-zA-Z0-9._%-]+$"
 
-# Matches Indy DIDs (base58, 21-22 chars, optional did:sov: prefix)
-INDY_DID_PATTERN = r"^(did:sov:)?[1-9A-HJ-NP-Za-km-z]{21,22}$"
-
-# Matches Verkeys (Base58, ~43-44 chars, but we allow 40-50 for safety)
-VERKEY_PATTERN = r"^[1-9A-HJ-NP-Za-km-z]{40,50}$"
+def _get_pattern(validator):
+    """Extract regex pattern string from Marshmallow Regexp validator."""
+    if hasattr(validator, "regex"):
+        return validator.regex.pattern
+    return None
 
 
 # --- Annotated Types ---
 
+# We extract .regex from the Marshmallow validator to pass to Pydantic
+
 UUID4Str = Annotated[
     str,
-    StringConstraints(pattern=UUID4_PATTERN, min_length=36, max_length=36),
+    StringConstraints(pattern=_get_pattern(UUID4_VALIDATE)),
     Field(
         description="UUID identifier",
         examples=["3fa85f64-5717-4562-b3fc-2c963f66afa6"],
+        json_schema_extra={"format": "uuid"},
     ),
 ]
 
 DIDStr = Annotated[
     str,
-    StringConstraints(pattern=DID_PATTERN),
+    StringConstraints(pattern=_get_pattern(GENERIC_DID_VALIDATE)),
     Field(
         description="Decentralized Identifier (DID)",
         examples=["did:sov:WRfXPg8dantKVubE3HX8pw"],
@@ -45,18 +49,25 @@ DIDStr = Annotated[
 
 IndyDidStr = Annotated[
     str,
-    StringConstraints(pattern=INDY_DID_PATTERN),
-    Field(
-        description="Indy DID",
-        examples=["WgWxqztrNooG92RXvxSTWv"],
-    ),
+    StringConstraints(pattern=_get_pattern(INDY_DID_VALIDATE)),
+    Field(description="Indy DID", examples=["WgWxqztrNooG92RXvxSTWv"]),
 ]
 
 VerkeyStr = Annotated[
     str,
-    StringConstraints(pattern=VERKEY_PATTERN),
+    StringConstraints(pattern=_get_pattern(RAW_ED25519_2018_PUBLIC_KEY_VALIDATE)),
     Field(
         description="Verification Key (Base58)",
         examples=["H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"],
+    ),
+]
+
+
+EndpointStr = Annotated[
+    str,
+    StringConstraints(pattern=_get_pattern(ENDPOINT_VALIDATE)),
+    Field(
+        description="URL endpoint",
+        examples=["https://myhost:8021"],
     ),
 ]

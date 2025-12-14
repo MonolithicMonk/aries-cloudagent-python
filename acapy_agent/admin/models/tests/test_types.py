@@ -3,7 +3,13 @@
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from acapy_agent.admin.models.types import DIDStr, IndyDidStr, UUID4Str, VerkeyStr
+from acapy_agent.admin.models.types import (
+    DIDStr,
+    EndpointStr,
+    IndyDidStr,
+    UUID4Str,
+    VerkeyStr,
+)
 
 
 class TypeModel(BaseModel):
@@ -13,6 +19,7 @@ class TypeModel(BaseModel):
     did: DIDStr
     indy_did: IndyDidStr
     verkey: VerkeyStr
+    endpoint: EndpointStr
 
 
 def test_uuid4_validation():
@@ -91,7 +98,7 @@ def test_verkey_validation():
     """Test VerkeyStr validation."""
     valid_uuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
     valid_indy_did = "WgWxqztrNooG92RXvxSTWv"
-    
+
     # Length check mostly
     valid_verkey = "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"  # 44 chars
 
@@ -109,3 +116,45 @@ def test_verkey_validation():
             indy_did=valid_indy_did,
             verkey="short",
         )
+
+
+def test_endpoint_validation():
+    """Test EndpointStr validation."""
+    valid_uuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    valid_indy_did = "WgWxqztrNooG92RXvxSTWv"
+    valid_verkey = "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
+    valid_did = "did:sov:WRfXPg8dantKVubE3HX8pw"
+
+    valid_endpoints = [
+        "http://localhost:8080",
+        "https://example.com",
+        "https://example.com/path/to/resource",
+        "ws://example.com:8000",
+        "wss://secure.example.com",
+    ]
+
+    for ep in valid_endpoints:
+        TypeModel(
+            uuid=valid_uuid,
+            did=valid_did,
+            indy_did=valid_indy_did,
+            verkey=valid_verkey,
+            endpoint=ep,
+        )
+
+    invalid_endpoints = [
+        "not-a-url",
+        "ftp://unsupported-scheme.com",
+        "http:/missing-slash.com",
+        "https://",  # Empty host
+    ]
+
+    for ep in invalid_endpoints:
+        with pytest.raises(ValidationError):
+            TypeModel(
+                uuid=valid_uuid,
+                did=valid_did,
+                indy_did=valid_indy_did,
+                verkey=valid_verkey,
+                endpoint=ep,
+            )
